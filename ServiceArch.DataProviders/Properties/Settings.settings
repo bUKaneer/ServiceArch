@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ServiceArch.Services.Data.Providers.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="sqlServerConnectionString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Data Source=(LocalDb)\v11.0;AttachDbFilename=|DataDirectory|\ServiceArch.mdf;Initial Catalog=ServiceArch;Integrated Security=True</Value>
+    </Setting>
+    <Setting Name="mongoDbConnectionString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">mongodb://localhost:27017/</Value>
+    </Setting>
+    <Setting Name="mongoDbDatabaseName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ServiceArch</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

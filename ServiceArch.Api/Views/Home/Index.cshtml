@@ -1,0 +1,185 @@
+﻿<div class="page-header">
+    <h1>jQuery Task List UI</h1>
+</div>
+<div class="row">
+    <div class="col-md-3">
+        <form class="well">
+            <fieldset>
+                <legend>Create new list</legend>
+                <p class="form-group">
+                    <label for="taskListName">Name:</label>
+                    <input class="form-control" type="text" id="taskListName" name="taskListName" />
+                </p>
+                <p class="form-group">
+                    <label for="taskListDescription">Description:</label>
+                    <input class="form-control" type="text" id="taskListDescription" name="taskListDescription" />
+                </p>
+                <p class="form-group">
+                    <input type="button" class="btn btn-success" id="taskListCreate" name="taskListCreate" value="Create task list" />
+                </p>
+            </fieldset>
+        </form>
+    </div>
+    <div class="col-md-9">
+        <table class="table table-striped table-bordered table-condensed table-striped table-hover table-responsive">
+            <caption>Existing lists</caption>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>IsComplete</th>
+                    <th># of Tasks</th>
+                    <th>Status</th>
+                    <th colspan="2">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="taskListTableBody"></tbody>
+        </table>
+    </div>
+</div>
+<div id="taskListItemContainer" class="row hide">
+    <div class="col-md-3">
+        <form class="well">
+            <fieldset>
+                <legend>Create new item</legend>
+                <p class="form-group">
+                    <label for="taskListItemDescription">Task list item description:</label>
+                    <input class="form-control" type="text" id="taskListItemDescription" name="taskListItemDescription" />
+                </p>
+                <p class="form-group">
+                    <input class="btn btn-success" type="button" id="taskListItenCreate" name="taskListItenCreate" value="Create task list item" />
+                </p>
+            </fieldset>
+        </form>
+    </div>
+    <div class="col-md-9">
+        <table class="table table-striped table-bordered table-condensed table-striped table-hover">
+            <caption>Existing items for list <span id="selectedTaskName"></span></caption>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>IsComplete</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="taskListItemsTableBody"></tbody>
+        </table>
+    </div>
+</div>
+@section scripts {
+    <script>
+        var taskLists = [];
+        var selectedTaskListId = '';
+        var selectedTaskList = {};
+
+        $(function () {
+            $('#taskListCreate').on('click', function () {
+                taskListCreate($('#taskListName').val(), $('#taskListDescription').val());
+            });
+            $('#taskListItenCreate').on('click', function (e) {
+
+                taskListItemCreate(selectedTaskListId, $('#taskListItemDescription').val());
+            });
+            taskLists = taskListGetAll();
+        });
+
+        function renderTaskLists(lists) {
+            taskLists = lists;
+            var tBody = $('#taskListTableBody');
+            tBody.empty();
+            for (var i = 0; i < lists.length; i++) {
+                tBody.append('<tr><td>' + lists[i].Name
+                          + '</td><td>' + lists[i].Description
+                          + '</td><td>' + lists[i].IsComplete
+                          + '</td><td>' + lists[i].Tasks.length
+                          + '</td><td>' + lists[i].Status
+                          + '</td><td><a onclick="renderTaskListItems(\'' + lists[i].Id + '\');">view tasks</a>'
+                          + '</td><td><a onclick="taskListDelete(\'' + lists[i].Id + '\');">delete</a>'
+                          + '</td></tr>');
+            }
+        }
+
+        function renderTaskListItems(listId) {
+            selectedTaskListId = listId;
+            selectedTaskList = $.grep(taskLists, function (e) { return e.Id === selectedTaskListId; })[0];
+            $('#selectedTaskName').text(selectedTaskList.Name);
+            var tBody = $('#taskListItemsTableBody');
+            tBody.empty();
+            for (var i = 0; i < selectedTaskList.Tasks.length; i++) {
+                var checkedAttribute = (selectedTaskList.Tasks[i].IsComplete) ? ' checked="checked" ' : '';
+                tBody.append('<tr><td>' + selectedTaskList.Tasks[i].Description
+                          + '</td><td><input onclick="taskListItemUpdate(\'' + selectedTaskListId + '\',\'' + selectedTaskList.Tasks[i].Id + '\')" type="checkbox" id="listItem-' + selectedTaskList.Tasks[i].Id + '" value="' + selectedTaskList.Tasks[i].IsComplete + '" ' + checkedAttribute + '/>'
+                          + '</td><td><a onclick="taskListItemDelete(\'' + selectedTaskListId + '\',\'' + selectedTaskList.Tasks[i].Id + '\');">delete</a>'
+                          + '</td></tr>');
+            }
+            $('#taskListItemContainer').removeClass('hide');
+        }
+
+        function taskListGetAll() {
+            $.get('TaskList/GetAll', renderTaskLists, 'json');
+        }
+
+        function taskListCreate(name, description) {
+            $.post('TaskList/Create'
+                        , { "Name": name, "Description": description }
+                        , taskListCreateSuccess, 'json');
+        }
+
+        function taskListCreateSuccess(responseData) {
+            taskLists.push(responseData);
+            renderTaskLists(taskLists);
+        }
+
+        function taskListDelete(id) {
+            $.post('TaskList/Delete'
+                        , { "Id": id }
+                        , function () {
+                            var list = $.grep(taskLists, function (e) {
+                                return e.Id === id
+                            })[0];
+                            var itemIndex = taskLists.indexOf(list);
+                            taskLists.splice(itemIndex, 1);
+                            renderTaskLists(taskLists);
+                        }, 'json');
+        }
+
+        function taskListItemCreate(listId, description) {
+            $.post('TaskList/ItemCreate'
+                        , { "ListId": listId, "Description": description }
+                        , function (responseData) {
+                            selectedTaskList.Tasks.push(responseData);
+                            renderTaskListItems(listId);
+                            renderTaskLists(taskLists);
+                        }, 'json');
+        }
+
+        function taskListItemUpdate(taskListId, taskListItemId) {
+            var itemElement = $('#listItem-' + taskListItemId);
+            var item = $.grep(selectedTaskList.Tasks, function (e) {
+                return e.Id === taskListItemId
+            })[0];
+            item.IsComplete = itemElement.is(':checked');
+            $.post('TaskList/ItemUpdate'
+            , {
+                "ListId": taskListId
+                , "ItemId": taskListItemId
+                , "IsCompleted": item.IsComplete
+                , "Description": item.Description
+            }, null, 'json');
+        }
+
+        function taskListItemDelete(taskListId, taskListItemId) {
+            $.post('TaskList/ItemDelete'
+                        , { "ItemId": taskListItemId }
+                        , function () {
+                            var item = $.grep(selectedTaskList.Tasks, function (e) {
+                                return e.Id === taskListItemId
+                            })[0];
+                            var itemIndex = selectedTaskList.Tasks.indexOf(item);
+                            selectedTaskList.Tasks.splice(itemIndex, 1);
+                            renderTaskLists(taskLists);
+                            renderTaskListItems(taskListId);
+                        }, 'json');
+        }
+    </script>
+}
