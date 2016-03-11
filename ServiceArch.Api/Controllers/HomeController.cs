@@ -14,5 +14,11 @@ namespace ServiceArch.Api.Controllers
 
             return View();
         }
+
+        public ActionResult Settings()
+        {
+
+            return View();
+        }
     }
 }

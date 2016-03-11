@@ -1,0 +1,55 @@
+﻿
+@{
+    ViewBag.Title = "Settings";
+}
+<div class="page-header">
+    <h1>Settings UI</h1>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <form class="well" action="/Setting/SaveChanges" method="post">
+            <fieldset>
+                <legend>Settings</legend>
+                <div id="settingContainer"></div>
+                <button class="btn btn-default" id="saveChanges">Save Changes</button>
+            </fieldset>
+        </form>
+    </div>
+</div>
+@section scripts {
+    <script>
+        
+        $(function () {
+            settingGetKeys();
+            $('#saveChanges').on('click', saveChanges);
+        });
+
+        function saveChanges(e) {
+            e.preventDefault();
+            var settings = [];
+            var inputs = $('#settingContainer input');
+            for (var i = 0; i < inputs.length; i++) {
+                settings.push({ "Key": inputs[i].id, "Value" : inputs[i].value });
+            }
+            $.post('/Setting/SaveChanges', { '' : settings }, null, 'json');
+        }
+
+        function settingGetKeys() {
+            $.get('/Setting/GetKeys', renderSettings, 'json');
+        }
+
+        function settingGetByKey(key) {
+            $.post('/Setting/GetByKey', { 'Key' : key },  renderSetting, 'json');
+        }
+
+        function renderSetting(setting) {
+            $('#settingContainer').append('<p class="form-group"><label for="' + setting.Key + '">' + setting.Key + ':</label><input class="form-control form-control-block" type="text" id="' + setting.Key + '" name="' + setting.Key + '" value="' + setting.Value + '" /></p>');
+        }
+
+        function renderSettings(keys) {
+            for (var i = 0; i < keys.length; i++) {
+                settingGetByKey(keys[i]);
+            }
+        }
+    </script>
+}

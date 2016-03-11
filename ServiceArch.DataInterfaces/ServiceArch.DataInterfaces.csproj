@@ -49,6 +49,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entity.cs" />
+    <Compile Include="Interfaces\Services\ISettingService.cs" />
+    <Compile Include="SettingsService\Entities\Setting.cs" />
+    <Compile Include="SettingsService\Service.cs" />
+    <Compile Include="SettingsService\TransferObjects\AutoMapperProfile.cs" />
+    <Compile Include="SettingsService\TransferObjects\SettingDto.cs" />
+    <Compile Include="SettingsService\Validation\SettingValidator.cs" />
     <Compile Include="TaskListService\Entities\Task.cs" />
     <Compile Include="TaskListService\Entities\TaskList.cs" />
     <Compile Include="Interfaces\Services\ITaskListService.cs" />

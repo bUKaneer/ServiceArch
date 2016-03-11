@@ -3,7 +3,7 @@ using FluentValidation;
 using ServiceArch.Api.FluentValidation;
 using ServiceArch.DataInterfaces;
 using ServiceArch.DataInterfaces.Interfaces;
-using ServiceArch.DataProviders.MongoDb; //TODO: Choose a data store: MongoDb || EntityFramework
+using ServiceArch.DataProviders.EntityFramework; //TODO: Choose a data store: MongoDb || EntityFramework
 using System.Reflection;
 
 namespace ServiceArch.Api.AutofacModules
